@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account — Macarti Gadgets</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <style>
+    .auth-panel--right { background: white; }
+    .auth-form__logo { display: none; }
+    @media (max-width: 768px) { .auth-form__logo { display: flex; margin-bottom: 24px; } }
+    .form-label { display: flex; align-items: center; }
+  </style>
+</head>
+<body>
+<div class="auth-page">
+  <!-- Left panel -->
+  <div class="auth-panel auth-panel--left">
+    <div class="content">
+      <a href="/index.html" class="navbar__logo" style="margin-bottom:40px;display:flex">
+        <div class="logo-mark"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+        <span class="logo-text" style="color:white">Macarti<span style="color:var(--blue-300)">.</span></span>
+      </a>
+      <h2 class="auth-tagline">Join<br>Macarti<br><span>Today.</span></h2>
+      <div class="auth-features">
+        <div class="auth-feature"><div class="auth-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></div>Free account, no hidden fees</div>
+        <div class="auth-feature"><div class="auth-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg></div>Exclusive member deals</div>
+        <div class="auth-feature"><div class="auth-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>Order history & easy reorders</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right panel -->
+  <div class="auth-panel auth-panel--right">
+    <div class="auth-form">
+      <div class="auth-form__logo">
+        <a href="/index.html" class="navbar__logo"><div class="logo-mark"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><span class="logo-text">Macarti<span>.</span></span></a>
+      </div>
+      <h2>Create account</h2>
+      <p class="subtitle">Already have one? <a href="/pages/login.html">Sign in instead</a></p>
+
+      <form id="register-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="reg-first">First Name <span class="req">*</span></label>
+            <input type="text" id="reg-first" class="form-input" placeholder="Ada" required autocomplete="given-name">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="reg-last">Last Name <span class="req">*</span></label>
+            <input type="text" id="reg-last" class="form-input" placeholder="Lovelace" required autocomplete="family-name">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="reg-email">Email <span class="req">*</span></label>
+          <input type="email" id="reg-email" class="form-input" placeholder="you@email.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="reg-password">Password <span class="req">*</span></label>
+          <input type="password" id="reg-password" class="form-input" placeholder="Min. 8 characters" required minlength="8" autocomplete="new-password">
+          <div class="form-hint">Use at least 8 characters with letters and numbers.</div>
+        </div>
+        <div id="register-error" class="form-error" style="display:none"></div>
+        <div id="register-success" style="display:none;background:#d1fae5;color:#065f46;border-radius:var(--radius-sm);padding:12px 16px;font-size:.875rem;line-height:1.5"></div>
+        <button type="submit" class="btn btn--primary btn--full btn--lg" id="register-btn">Create Account</button>
+      </form>
+
+      <div class="auth-divider" style="margin-top:4px">or sign up with</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button class="oauth-btn" id="google-reg-btn">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Sign up with Google
+        </button>
+      </div>
+      <div class="auth-footer-link">By creating an account, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/config.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/ui.js"></script>
+<script>
+(async () => {
+  try { await Auth.getAccount(); window.location.href = "/index.html"; return; } catch {}
+
+  document.getElementById("register-form")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn     = document.getElementById("register-btn");
+    const errEl   = document.getElementById("register-error");
+    const succEl  = document.getElementById("register-success");
+    errEl.style.display = "none";
+    succEl.style.display = "none";
+
+    const payload = {
+      first_name: document.getElementById("reg-first").value.trim(),
+      last_name:  document.getElementById("reg-last").value.trim(),
+      email:      document.getElementById("reg-email").value.trim(),
+      password:   document.getElementById("reg-password").value,
+    };
+
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner" style="width:18px;height:18px;border-width:2px;display:inline-block"></span> Creating account…`;
+
+    try {
+      const res = await Auth.register(payload);
+      succEl.innerHTML = `
+        <strong>Account created!</strong><br>
+        ${res.message || "Check your email to verify your account before signing in."}`;
+      succEl.style.display = "block";
+      btn.textContent = "Account Created!";
+      setTimeout(() => { window.location.href = "/pages/login.html"; }, 3000);
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = "Create Account";
+      const data = err.data || {};
+      const msgs = Object.entries(data)
+        .filter(([k]) => k !== "non_field_errors")
+        .map(([k, v]) => `<strong>${k}:</strong> ${Array.isArray(v) ? v.join(", ") : v}`);
+      const nonField = data.non_field_errors || [];
+      const allMsgs = [...(Array.isArray(nonField) ? nonField : [nonField]), ...msgs];
+      errEl.innerHTML = allMsgs.join("<br>") || err.message || "Registration failed.";
+      errEl.style.display = "block";
+    }
+  });
+
+  document.getElementById("google-reg-btn")?.addEventListener("click", () => {
+    alert("Google OAuth: Integrate Google Identity Services SDK. See login.js for guidance.");
+  });
+})();
+</script>
+</body>
+</html>

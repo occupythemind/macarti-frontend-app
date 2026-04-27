@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product — Macarti Gadgets</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/product.css">
+</head>
+<body>
+  <div id="nav-root"></div>
+
+  <main class="page-wrap">
+    <div class="container" style="padding-top:32px;padding-bottom:64px">
+      <div id="breadcrumb-wrap" class="breadcrumb">
+        <a href="/index.html">Home</a>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+        <a href="/pages/catalog.html">Products</a>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+        <span id="breadcrumb-name">Loading…</span>
+      </div>
+
+      <div id="product-content">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Related / More from brand -->
+      <section style="margin-top:56px" id="related-section" class="hidden">
+        <div class="section-head">
+          <div>
+            <p class="label">You may also like</p>
+            <h2 id="related-heading">More Products</h2>
+          </div>
+        </div>
+        <div class="grid-4" id="related-products"></div>
+      </section>
+    </div>
+  </main>
+
+  <div id="footer-root"></div>
+
+  <!-- Wishlist modal -->
+  <div class="modal" id="wishlist-modal">
+    <div class="modal__box">
+      <div class="modal__header">
+        <h3>Save to Wishlist</h3>
+        <span class="modal__close" onclick="Modal.close('wishlist-modal')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </span>
+      </div>
+      <div class="modal__body" id="wishlist-modal-body"></div>
+    </div>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/layout.js"></script>
+  <script src="/js/home.js"></script>
+  <script src="/js/product.js"></script>
+</body>
+</html>

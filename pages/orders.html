@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Orders — Macarti Gadgets</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <div id="nav-root"></div>
+  <main class="page-wrap">
+    <div class="container" style="padding-top:36px;padding-bottom:64px">
+      <div class="breadcrumb">
+        <a href="/index.html">Home</a>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+        <a href="/pages/account.html">Account</a>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+        <span>Orders</span>
+      </div>
+      <h1 style="margin-bottom:28px">My Orders</h1>
+      <div class="card" style="padding:0">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--gray-100)">
+          <select class="form-select" id="status-filter" style="height:36px;font-size:.8125rem;width:180px">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="paid">Paid</option>
+            <option value="shipped">Shipped</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="failed">Failed</option>
+          </select>
+        </div>
+        <div id="orders-list"></div>
+      </div>
+      <div id="orders-pagination"></div>
+    </div>
+  </main>
+  <div id="footer-root"></div>
+  <script src="/js/config.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/layout.js"></script>
+  <script>
+  const STATUS_BADGE = {
+    pending:"badge--amber",paid:"badge--blue",shipped:"badge--blue",
+    delivered:"badge--green",cancelled:"badge--gray",failed:"badge--red"
+  };
+
+  async function loadOrders(params = {}, pageUrl = null) {
+    const container  = document.getElementById("orders-list");
+    const pagination = document.getElementById("orders-pagination");
+    Loader.show(container, "Loading orders…");
+    try {
+      const data = pageUrl
+        ? await fetch(pageUrl, { credentials:"include" }).then(r => r.json())
+        : await Orders.listOrders({ page_size: 10, ordering: "-created_at", ...params });
+
+      if (!data.results?.length) {
+        Loader.empty(container, "No orders yet.", `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>`);
+        if (pagination) pagination.innerHTML = "";
+        return;
+      }
+
+      container.innerHTML = data.results.map(order => `
+        <div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--gray-100);flex-wrap:wrap">
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;color:var(--blue-900);font-family:var(--font-display)">#${order.id.slice(0,8).toUpperCase()}</div>
+            <div style="font-size:.8rem;color:var(--gray-500);margin-top:2px">
+              ${new Date(order.created_at).toLocaleDateString("en-NG",{year:"numeric",month:"short",day:"numeric"})} &nbsp;·&nbsp; ${order.items?.length || 0} item${(order.items?.length || 0) !== 1 ? "s" : ""}
+            </div>
+          </div>
+          <span class="badge ${STATUS_BADGE[order.status] || "badge--gray"}">${order.status}</span>
+          <div style="font-weight:700;color:var(--blue-700)">${formatPrice(order.total_amount)}</div>
+          <a href="/pages/order-detail.html?id=${order.id}" class="btn btn--outline btn--sm">View →</a>
+        </div>`).join("");
+
+      renderPagination(pagination, data, (url) => loadOrders({ status: document.getElementById("status-filter").value || undefined }, url));
+    } catch (err) {
+      if (err.status === 401) { window.location.href = "/pages/login.html?next=/pages/orders.html"; return; }
+      Loader.error(container, "Couldn't load orders.");
+    }
+  }
+
+  (async () => {
+    await Layout.init();
+    if (!AuthState.isLoggedIn) { window.location.href = "/pages/login.html?next=/pages/orders.html"; return; }
+    await loadOrders();
+    document.getElementById("status-filter")?.addEventListener("change", (e) => {
+      loadOrders({ status: e.target.value || undefined });
+    });
+  })();
+  </script>
+</body>
+</html>

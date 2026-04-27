@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory — Staff — Macarti Gadgets</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/staff.css">
+</head>
+<body>
+  <div id="nav-root"></div>
+  <main class="page-wrap">
+    <div class="staff-layout">
+      <aside class="staff-sidebar">
+        <div class="staff-sidebar__header"><span class="label" style="color:var(--blue-300)">Staff Panel</span></div>
+        <nav class="staff-nav">
+          <a href="/pages/staff/dashboard.html" class="staff-nav-item" data-page="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+          <a href="/pages/staff/products.html" class="staff-nav-item" data-page="products"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Products</a>
+          <a href="/pages/staff/categories.html" class="staff-nav-item" data-page="categories"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>Categories</a>
+          <a href="/pages/staff/inventory.html" class="staff-nav-item active" data-page="inventory"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14M5 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"/><path d="M9 15h6"/></svg>Inventory</a>
+          <div class="staff-nav-divider"></div>
+          <a href="/index.html" class="staff-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Back to Store</a>
+        </nav>
+      </aside>
+
+      <div class="staff-main">
+        <div class="staff-topbar">
+          <div><h2 style="margin:0">Inventory</h2><p class="text-muted" style="font-size:.8125rem;margin-top:2px">Manage stock levels</p></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn--outline" id="bulk-update-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+              Bulk Update
+            </button>
+            <button class="btn btn--primary" id="adjust-stock-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M12 5v14M5 12h14"/></svg>
+              Adjust Stock
+            </button>
+          </div>
+        </div>
+
+        <!-- Variants stock table -->
+        <div class="staff-section">
+          <div class="staff-toolbar">
+            <div class="staff-toolbar__search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input type="text" id="inv-search" placeholder="Search by product name…">
+            </div>
+            <select class="form-select" id="inv-stock-filter" style="height:36px;font-size:.8125rem">
+              <option value="">All Stock</option>
+              <option value="out">Out of Stock</option>
+              <option value="low">Low Stock (≤5)</option>
+              <option value="ok">In Stock</option>
+            </select>
+            <span class="text-muted" id="inv-count" style="font-size:.8125rem;margin-left:auto"></span>
+          </div>
+          <div class="staff-table-wrap">
+            <table class="staff-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Variant</th>
+                  <th>SKU</th>
+                  <th>Stock</th>
+                  <th>Reserved</th>
+                  <th>Available</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="inv-tbody"></tbody>
+            </table>
+          </div>
+          <div id="inv-pagination" style="padding:12px 16px"></div>
+        </div>
+
+        <!-- Inventory log -->
+        <div class="staff-section">
+          <div class="staff-section__head">
+            <h3>Inventory Log</h3>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select class="form-select" id="log-action-filter" style="height:32px;font-size:.78rem">
+                <option value="">All actions</option>
+                <option value="SET">SET</option>
+                <option value="INCREASE">INCREASE</option>
+                <option value="DECREASE">DECREASE</option>
+                <option value="RESERVE">RESERVE</option>
+                <option value="RELEASE">RELEASE</option>
+                <option value="CONFIRM">CONFIRM</option>
+              </select>
+            </div>
+          </div>
+          <div class="staff-table-wrap">
+            <table class="staff-table">
+              <thead><tr><th>Action</th><th>Variant ID</th><th>Qty</th><th>Performed By</th><th>Date</th></tr></thead>
+              <tbody id="log-tbody"></tbody>
+            </table>
+          </div>
+          <div id="log-pagination" style="padding:12px 16px"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <div id="footer-root"></div>
+
+  <!-- Adjust stock modal -->
+  <div class="modal" id="adjust-modal">
+    <div class="modal__box">
+      <div class="modal__header">
+        <h3>Adjust Stock</h3>
+        <span class="modal__close" onclick="Modal.close('adjust-modal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg></span>
+      </div>
+      <div class="modal__body">
+        <div class="form-group">
+          <label class="form-label">Variant ID <span class="req">*</span></label>
+          <input type="text" class="form-input" id="adj-variant-id" placeholder="UUID of variant">
+          <div class="form-hint">You can find this in the variants table above.</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Action <span class="req">*</span></label>
+          <select class="form-select" id="adj-action">
+            <option value="SET">SET — Set absolute quantity</option>
+            <option value="INCREASE">INCREASE — Add units</option>
+            <option value="DECREASE">DECREASE — Remove units</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quantity <span class="req">*</span></label>
+          <input type="number" class="form-input" id="adj-qty" placeholder="0" min="0">
+        </div>
+        <div id="adj-error" class="form-error" style="display:none"></div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn--ghost" onclick="Modal.close('adjust-modal')">Cancel</button>
+        <button class="btn btn--primary" id="adj-save-btn">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk update modal -->
+  <div class="modal" id="bulk-modal">
+    <div class="modal__box modal__box--wide">
+      <div class="modal__header">
+        <h3>Bulk Stock Update</h3>
+        <span class="modal__close" onclick="Modal.close('bulk-modal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg></span>
+      </div>
+      <div class="modal__body">
+        <p style="font-size:.875rem;color:var(--gray-600)">Enter one <code style="background:var(--gray-100);padding:2px 6px;border-radius:4px">variant_id,quantity</code> pair per line.</p>
+        <div class="form-group">
+          <label class="form-label">Updates</label>
+          <textarea class="form-textarea" id="bulk-input" rows="8" placeholder="6c6d7030-fd91-4d30-8a74-457b5f670001,20&#10;6c6d7030-fd91-4d30-8a74-457b5f670002,5"></textarea>
+        </div>
+        <div id="bulk-error" class="form-error" style="display:none"></div>
+        <div id="bulk-success" style="display:none;color:var(--success);font-size:.875rem;font-weight:500"></div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn--ghost" onclick="Modal.close('bulk-modal')">Cancel</button>
+        <button class="btn btn--primary" id="bulk-save-btn">Apply All</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/layout.js"></script>
+  <script src="/js/staff-common.js"></script>
+  <script src="/js/staff-inventory.js"></script>
+</body>
+</html>

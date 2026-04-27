@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products — Macarti Gadgets</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/catalog.css">
+</head>
+<body>
+  <div id="nav-root"></div>
+
+  <main class="page-wrap">
+    <div class="container" style="padding-top:32px;padding-bottom:64px">
+
+      <div class="catalog-layout">
+        <!-- ── Sidebar ─────────────────────────────── -->
+        <aside class="catalog-sidebar" id="catalog-sidebar">
+          <div class="sidebar-header">
+            <h4>Filters</h4>
+            <button class="btn btn--ghost btn--sm" id="clear-filters-btn">Clear all</button>
+          </div>
+
+          <!-- Categories -->
+          <div class="filter-group">
+            <div class="filter-group__head">Categories</div>
+            <div id="filter-categories" class="filter-list">
+              <div class="skeleton" style="height:28px;margin-bottom:6px"></div>
+              <div class="skeleton" style="height:28px;margin-bottom:6px"></div>
+              <div class="skeleton" style="height:28px;"></div>
+            </div>
+          </div>
+
+          <!-- Brands (populated dynamically) -->
+          <div class="filter-group" id="filter-brands-group">
+            <div class="filter-group__head">Brand</div>
+            <div id="filter-brands" class="filter-list"></div>
+          </div>
+
+          <!-- Sort -->
+          <div class="filter-group">
+            <div class="filter-group__head">Sort By</div>
+            <div class="filter-list" id="filter-sort">
+              <label class="filter-radio">
+                <input type="radio" name="sort" value="-id" checked> Newest First
+              </label>
+              <label class="filter-radio">
+                <input type="radio" name="sort" value="base_price"> Price: Low to High
+              </label>
+              <label class="filter-radio">
+                <input type="radio" name="sort" value="-base_price"> Price: High to Low
+              </label>
+              <label class="filter-radio">
+                <input type="radio" name="sort" value="name"> Name A–Z
+              </label>
+            </div>
+          </div>
+        </aside>
+
+        <!-- ── Main content ───────────────────────── -->
+        <div class="catalog-main">
+          <!-- Toolbar -->
+          <div class="catalog-toolbar">
+            <div class="catalog-toolbar__left">
+              <button class="btn btn--ghost btn--sm" id="sidebar-toggle-mobile">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="10" y2="18"/></svg>
+                Filters
+              </button>
+              <span class="catalog-count" id="catalog-count">— products</span>
+            </div>
+            <div class="catalog-toolbar__right">
+              <div class="catalog-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15" class="catalog-search__icon"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <input type="text" id="catalog-search-input" placeholder="Search products…" class="form-input" style="height:36px;padding-left:34px;font-size:.8125rem">
+              </div>
+              <div class="view-toggle">
+                <button class="view-btn active" data-view="grid" title="Grid view">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                </button>
+                <button class="view-btn" data-view="list" title="List view">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active filter chips -->
+          <div class="active-filters" id="active-filters" style="display:none"></div>
+
+          <!-- Products grid -->
+          <div class="grid-4" id="catalog-products" style="margin-top:20px"></div>
+
+          <!-- Pagination -->
+          <div id="catalog-pagination"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="footer-root"></div>
+
+  <!-- Wishlist modal -->
+  <div class="modal" id="wishlist-modal">
+    <div class="modal__box">
+      <div class="modal__header">
+        <h3>Save to Wishlist</h3>
+        <span class="modal__close" onclick="Modal.close('wishlist-modal')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </span>
+      </div>
+      <div class="modal__body" id="wishlist-modal-body"></div>
+    </div>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/layout.js"></script>
+  <script src="/js/home.js"></script>
+  <script src="/js/catalog.js"></script>
+</body>
+</html>

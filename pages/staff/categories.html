@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Categories — Staff — Macarti Gadgets</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/staff.css">
+</head>
+<body>
+  <div id="nav-root"></div>
+  <main class="page-wrap">
+    <div class="staff-layout">
+      <aside class="staff-sidebar">
+        <div class="staff-sidebar__header"><span class="label" style="color:var(--blue-300)">Staff Panel</span></div>
+        <nav class="staff-nav">
+          <a href="/pages/staff/dashboard.html" class="staff-nav-item" data-page="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+          <a href="/pages/staff/products.html" class="staff-nav-item" data-page="products"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Products</a>
+          <a href="/pages/staff/categories.html" class="staff-nav-item active" data-page="categories"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>Categories</a>
+          <a href="/pages/staff/inventory.html" class="staff-nav-item" data-page="inventory"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14M5 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8"/><path d="M9 15h6"/></svg>Inventory</a>
+          <div class="staff-nav-divider"></div>
+          <a href="/index.html" class="staff-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Back to Store</a>
+        </nav>
+      </aside>
+      <div class="staff-main">
+        <div class="staff-topbar">
+          <div><h2 style="margin:0">Categories</h2><p class="text-muted" style="font-size:.8125rem;margin-top:2px">Organise your product catalog</p></div>
+          <button class="btn btn--primary" id="new-cat-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15"><path d="M12 5v14M5 12h14"/></svg>
+            New Category
+          </button>
+        </div>
+        <div class="staff-section">
+          <div class="staff-toolbar">
+            <div class="staff-toolbar__search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input type="text" id="cat-search" placeholder="Search categories…">
+            </div>
+            <span class="text-muted" id="cat-count" style="font-size:.8125rem;margin-left:auto"></span>
+          </div>
+          <div class="staff-table-wrap">
+            <table class="staff-table">
+              <thead><tr><th>Name</th><th>ID</th><th>Actions</th></tr></thead>
+              <tbody id="cats-tbody"></tbody>
+            </table>
+          </div>
+          <div id="cats-pagination" style="padding:12px 16px"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <div id="footer-root"></div>
+
+  <!-- Category modal -->
+  <div class="modal" id="cat-modal">
+    <div class="modal__box">
+      <div class="modal__header">
+        <h3 id="cat-modal-title">New Category</h3>
+        <span class="modal__close" onclick="Modal.close('cat-modal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg></span>
+      </div>
+      <div class="modal__body">
+        <div class="form-group">
+          <label class="form-label">Category Name <span class="req">*</span></label>
+          <input type="text" class="form-input" id="cat-name-input" placeholder="e.g. Laptops">
+        </div>
+        <div id="cat-error" class="form-error" style="display:none"></div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn--ghost" onclick="Modal.close('cat-modal')">Cancel</button>
+        <button class="btn btn--primary" id="cat-save-btn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/layout.js"></script>
+  <script src="/js/staff-common.js"></script>
+  <script>
+  let editingCatId = null;
+
+  async function loadCategories(params = {}, pageUrl = null) {
+    const tbody   = document.getElementById("cats-tbody");
+    const countEl = document.getElementById("cat-count");
+    const pagEl   = document.getElementById("cats-pagination");
+    tbody.innerHTML = `<tr><td colspan="3" style="padding:28px;text-align:center"><span class="spinner" style="display:inline-block"></span></td></tr>`;
+    try {
+      const data = pageUrl
+        ? await fetch(pageUrl, { credentials: "include" }).then(r => r.json())
+        : await Catalog.listCategories({ page_size: 20, ...params });
+      if (countEl) countEl.textContent = `${data.count || 0} categories`;
+      if (!data.results?.length) {
+        tbody.innerHTML = `<tr><td colspan="3" style="padding:28px;text-align:center;color:var(--gray-400)">No categories yet.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = data.results.map(c => `
+        <tr>
+          <td style="font-weight:600;color:var(--blue-900)">${c.name}</td>
+          <td class="text-mono">${c.id.slice(0,16)}…</td>
+          <td>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn--outline btn--sm" onclick="openEditCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Edit
+              </button>
+              <button class="btn btn--danger btn--sm" onclick="deleteCat('${c.id}','${c.name.replace(/'/g,"\\'")}')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+              </button>
+            </div>
+          </td>
+        </tr>`).join("");
+      staffRenderPagination(pagEl, data, (url) => loadCategories({ search: document.getElementById("cat-search")?.value.trim() || undefined }, url));
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="3" style="padding:24px;text-align:center;color:var(--danger)">${err.message}</td></tr>`;
+    }
+  }
+
+  window.openEditCat = function(id, name) {
+    editingCatId = id;
+    document.getElementById("cat-modal-title").textContent = "Edit Category";
+    document.getElementById("cat-name-input").value = name;
+    document.getElementById("cat-error").style.display = "none";
+    Modal.open("cat-modal");
+  };
+
+  window.deleteCat = async function(id, name) {
+    if (!confirm(`Delete category "${name}"?`)) return;
+    try { await Api.delete(`/products/categories/${id}`); Toast.success("Category deleted."); await loadCategories(); }
+    catch (err) { Toast.error(err.message); }
+  };
+
+  (async () => {
+    await Layout.init();
+    await staffGuard();
+    await loadCategories();
+
+    document.getElementById("new-cat-btn")?.addEventListener("click", () => {
+      editingCatId = null;
+      document.getElementById("cat-modal-title").textContent = "New Category";
+      document.getElementById("cat-name-input").value = "";
+      document.getElementById("cat-error").style.display = "none";
+      Modal.open("cat-modal");
+    });
+
+    document.getElementById("cat-save-btn")?.addEventListener("click", async () => {
+      const name  = document.getElementById("cat-name-input").value.trim();
+      const errEl = document.getElementById("cat-error");
+      if (!name) { errEl.textContent = "Name required."; errEl.style.display = "block"; return; }
+      errEl.style.display = "none";
+      const btn = document.getElementById("cat-save-btn");
+      btn.disabled = true;
+      try {
+        if (editingCatId) { await Api.put(`/products/categories/${editingCatId}`, { name }); Toast.success("Category updated."); }
+        else              { await Api.post("/products/categories", { name }); Toast.success("Category created."); }
+        Modal.close("cat-modal");
+        await loadCategories();
+      } catch (err) {
+        errEl.textContent = err.data?.name?.[0] || err.message || "Save failed."; errEl.style.display = "block";
+      } finally { btn.disabled = false; }
+    });
+
+    document.getElementById("cat-search")?.addEventListener("input", debounce(() => {
+      loadCategories({ search: document.getElementById("cat-search").value.trim() || undefined });
+    }, 350));
+  })();
+  </script>
+</body>
+</html>

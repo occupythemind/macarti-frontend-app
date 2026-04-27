@@ -1,0 +1,96 @@
+/* ── Product detail page ─────────────────────────────────── */
+
+/* Sticky add-to-cart bar (mobile) */
+.sticky-atc {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 200;
+  background: white;
+  border-top: 1px solid var(--gray-100);
+  padding: 12px var(--content-pad);
+  box-shadow: 0 -4px 24px rgba(10,22,40,.10);
+  gap: 12px;
+  align-items: center;
+}
+@media (max-width: 768px) { .sticky-atc { display: flex; } }
+.sticky-atc__info { flex: 1; min-width: 0; }
+.sticky-atc__name { font-weight: 600; font-size: 0.875rem; color: var(--blue-900); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sticky-atc__price { font-weight: 700; color: var(--blue-600); font-size: 1rem; }
+
+/* Gallery no-image placeholder */
+.gallery__main--placeholder {
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--blue-50), var(--blue-100));
+}
+.gallery__main--placeholder svg { width: 80px; height: 80px; color: var(--blue-300); }
+
+/* Tabs (description / specs) */
+.product-tabs {
+  margin-top: 8px;
+}
+.tab-nav {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--gray-100);
+  margin-bottom: 20px;
+}
+.tab-btn {
+  padding: 10px 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gray-500);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: color var(--transition), border-color var(--transition);
+  background: none;
+  border-top: none; border-left: none; border-right: none;
+}
+.tab-btn:hover { color: var(--blue-600); }
+.tab-btn.active { color: var(--blue-600); border-bottom-color: var(--blue-500); }
+
+.tab-panel { display: none; animation: fadeIn .2s ease; }
+.tab-panel.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* Add to cart section */
+.atc-section {
+  padding-top: 20px;
+  border-top: 1px solid var(--gray-100);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.atc-row {
+  display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+}
+.atc-error {
+  font-size: 0.8125rem;
+  color: var(--danger);
+  display: none;
+}
+.atc-error.visible { display: block; }
+
+/* Trust badges under ATC */
+.product-trust {
+  display: flex; flex-wrap: wrap; gap: 16px;
+  padding-top: 4px;
+}
+.product-trust .trust-item {
+  font-size: .78rem;
+  color: var(--gray-500);
+  display: flex; align-items: center; gap: 5px;
+}
+.product-trust .trust-item svg { color: var(--blue-400); }
+
+/* Review placeholder */
+/* SUGGESTION: Integrate with a reviews service (e.g. Judge.me, Stamped.io, or build a custom reviews endpoint) */
+.reviews-placeholder {
+  padding: 32px;
+  border: 2px dashed var(--gray-200);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  color: var(--gray-400);
+  font-size: 0.875rem;
+}

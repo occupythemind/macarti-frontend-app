@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Account — Macarti Gadgets</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <div id="nav-root"></div>
+  <main class="page-wrap">
+    <div class="container" style="padding-top:36px;padding-bottom:64px">
+      <h1 style="margin-bottom:28px">My Account</h1>
+      <div class="account-layout">
+        <!-- Sidebar -->
+        <div class="account-sidebar">
+          <div style="padding:18px 16px;border-bottom:1px solid var(--gray-100)">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:44px;height:44px;border-radius:50%;background:var(--blue-500);display:flex;align-items:center;justify-content:center;color:white;font-family:var(--font-display);font-weight:700;font-size:1.1rem" id="sidebar-avatar">U</div>
+              <div>
+                <div style="font-weight:700;color:var(--blue-900)" id="sidebar-name">Loading…</div>
+                <div style="font-size:.78rem;color:var(--gray-500)" id="sidebar-joined"></div>
+              </div>
+            </div>
+          </div>
+          <div style="padding:8px">
+            <button class="account-nav-item active" data-tab="profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+              Profile
+            </button>
+            <button class="account-nav-item" data-tab="orders">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+              My Orders
+            </button>
+            <button class="account-nav-item" data-tab="payments">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              Payments
+            </button>
+            <div style="height:1px;background:var(--gray-100);margin:6px 4px"></div>
+            <button class="account-nav-item danger" id="delete-account-nav">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              Delete Account
+            </button>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div id="account-content">
+          <!-- Profile tab -->
+          <div class="tab-panel active" id="tab-profile">
+            <div class="card">
+              <div class="card__body">
+                <h3 style="margin-bottom:20px">Profile Details</h3>
+                <form id="profile-form" style="display:flex;flex-direction:column;gap:16px;max-width:480px">
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label">First Name</label>
+                      <input type="text" class="form-input" id="pf-first">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Last Name</label>
+                      <input type="text" class="form-input" id="pf-last">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-input" id="pf-username">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">New Password <span style="font-weight:400;color:var(--gray-400)">(leave blank to keep current)</span></label>
+                    <input type="password" class="form-input" id="pf-password" placeholder="••••••••" minlength="8">
+                  </div>
+                  <div id="profile-error" class="form-error" style="display:none"></div>
+                  <div id="profile-success" style="display:none;color:var(--success);font-size:.875rem;font-weight:500"></div>
+                  <div>
+                    <button type="submit" class="btn btn--primary" id="save-profile-btn">Save Changes</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Orders tab -->
+          <div class="tab-panel" id="tab-orders">
+            <div class="card" style="padding:0">
+              <div style="padding:16px 20px;border-bottom:1px solid var(--gray-100)">
+                <h3 style="margin:0">Order History</h3>
+              </div>
+              <div id="orders-list"></div>
+            </div>
+            <div id="orders-pagination"></div>
+          </div>
+
+          <!-- Payments tab -->
+          <div class="tab-panel" id="tab-payments">
+            <div class="card" style="padding:0">
+              <div style="padding:16px 20px;border-bottom:1px solid var(--gray-100)">
+                <h3 style="margin:0">Payment History</h3>
+              </div>
+              <div id="payments-list"></div>
+            </div>
+            <div id="payments-pagination"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <div id="footer-root"></div>
+
+  <!-- Delete account modal -->
+  <div class="modal" id="delete-modal">
+    <div class="modal__box">
+      <div class="modal__header">
+        <h3 style="color:var(--danger)">Delete Account</h3>
+        <span class="modal__close" onclick="Modal.close('delete-modal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg></span>
+      </div>
+      <div class="modal__body">
+        <p style="color:var(--gray-600);font-size:.9rem">Your account will be deactivated and permanently deleted after 30 days. Enter your password to confirm.</p>
+        <div class="form-group">
+          <label class="form-label">Password <span class="req">*</span></label>
+          <input type="password" class="form-input" id="delete-password" placeholder="Your current password">
+        </div>
+        <div id="delete-error" class="form-error" style="display:none"></div>
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn--ghost" onclick="Modal.close('delete-modal')">Cancel</button>
+        <button class="btn btn--danger" id="confirm-delete-btn">Delete My Account</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .account-nav-item.danger { color: var(--danger); }
+    .account-nav-item.danger svg { color: var(--danger); }
+    .order-row { display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--gray-100);flex-wrap:wrap; }
+    .order-row:last-child { border:none; }
+    .order-row__id { font-family:var(--font-display);font-weight:700;color:var(--blue-900);font-size:.875rem; }
+    .order-row__meta { font-size:.8rem;color:var(--gray-500);margin-top:2px; }
+    .order-row__amount { font-weight:700;color:var(--blue-700);margin-left:auto; }
+    .payment-row { display:flex;align-items:center;gap:14px;padding:13px 20px;border-bottom:1px solid var(--gray-100);flex-wrap:wrap; }
+    .payment-row:last-child { border:none; }
+  </style>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/layout.js"></script>
+  <script src="/js/account.js"></script>
+</body>
+</html>
