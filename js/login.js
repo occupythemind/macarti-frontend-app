@@ -39,7 +39,8 @@
       btn.textContent = "Sign In";
       let msg = err.data?.detail || err.message || "Login failed.";
       if (err.status === 403) {
-        msg = `Email not verified. <a href="/pages/verify.html" style="color:var(--blue-500)">Resend verification →</a>`;
+        const enc = encodeURIComponent(email);
+        msg = `Email not verified. <a href="/pages/resend-verify.html?email=${enc}" style="color:var(--blue-500);font-weight:600">Resend verification email →</a>`;
       }
       errEl.innerHTML = msg;
       errEl.style.display = "block";

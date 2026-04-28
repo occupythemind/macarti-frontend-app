@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resend Verification — Macarti Gadgets</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--blue-50)">
+  <div style="background:white;border-radius:var(--radius-xl);padding:40px;max-width:440px;width:100%;box-shadow:var(--shadow-xl);text-align:center">
+
+    <a href="/index.html" style="display:inline-flex;align-items:center;gap:8px;margin-bottom:28px;text-decoration:none">
+      <div class="logo-mark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+        </svg>
+      </div>
+      <span class="logo-text">Macarti<span>.</span></span>
+    </a>
+
+    <div id="resend-content">
+      <!-- Initial state: form -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--blue-500)" stroke-width="1.5"
+           width="52" height="52" style="margin:0 auto 16px;display:block">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+        <polyline points="22,6 12,13 2,6"/>
+      </svg>
+      <h3 style="margin-bottom:8px">Resend Verification Email</h3>
+      <p style="color:var(--gray-500);font-size:.9rem;margin-bottom:24px;margin-inline:auto">
+        Enter the email address you registered with and we'll send you a new verification link.
+      </p>
+
+      <form id="resend-form" style="display:flex;flex-direction:column;gap:14px;text-align:left">
+        <div class="form-group">
+          <label class="form-label" for="resend-email-input">Email address <span class="req">*</span></label>
+          <input
+            type="email"
+            id="resend-email-input"
+            class="form-input"
+            placeholder="you@email.com"
+            required
+            autocomplete="email"
+          >
+        </div>
+        <div id="resend-error" class="form-error" style="display:none"></div>
+        <button type="submit" class="btn btn--primary btn--full btn--lg" id="resend-submit-btn">
+          Send Verification Link
+        </button>
+      </form>
+
+      <div style="margin-top:20px;font-size:.875rem;color:var(--gray-500)">
+        Already verified? <a href="/pages/login.html" style="color:var(--blue-500);font-weight:600">Sign in</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/ui.js"></script>
+  <script>
+  (async () => {
+    // Pre-fill email if passed via query param (from login 403 redirect)
+    const preEmail = new URLSearchParams(window.location.search).get("email");
+    const emailInput = document.getElementById("resend-email-input");
+    if (preEmail && emailInput) emailInput.value = decodeURIComponent(preEmail);
+
+    document.getElementById("resend-form")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email  = emailInput.value.trim();
+      const btn    = document.getElementById("resend-submit-btn");
+      const errEl  = document.getElementById("resend-error");
+      const content = document.getElementById("resend-content");
+
+      if (!email) {
+        errEl.textContent = "Please enter your email address.";
+        errEl.style.display = "block";
+        return;
+      }
+
+      errEl.style.display = "none";
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner" style="width:18px;height:18px;border-width:2px;display:inline-block"></span> Sending…`;
+
+      try {
+        await Auth.resendVerification(email);
+
+        // Show success state — the API always returns a safe generic message
+        // regardless of whether the email exists (to prevent enumeration)
+        content.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"
+               width="56" height="56" style="margin:0 auto 16px;display:block">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+          <h3 style="color:var(--success);margin-bottom:10px">Email Sent!</h3>
+          <p style="color:var(--gray-600);font-size:.9rem;margin-inline:auto;margin-bottom:24px">
+            If an account exists for <strong>${email}</strong>, a verification link has been sent.
+            Check your inbox (and spam folder).
+          </p>
+          <a href="/pages/login.html" class="btn btn--primary btn--full">Back to Sign In</a>
+          <button
+            class="btn btn--ghost btn--full"
+            style="margin-top:8px"
+            onclick="window.location.reload()"
+          >Send again</button>`;
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = "Send Verification Link";
+        // The API returns 200 even for non-existent emails, so a real error here
+        // is likely a network/rate-limit issue
+        if (err.status === 429) {
+          errEl.textContent = "Too many attempts. Please wait a few minutes and try again.";
+        } else {
+          errEl.textContent = err.data?.detail || err.message || "Something went wrong. Please try again.";
+        }
+        errEl.style.display = "block";
+      }
+    });
+  })();
+  </script>
+</body>
+</html>

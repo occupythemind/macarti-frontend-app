@@ -59,7 +59,6 @@ const Modal = (() => {
     document.body.style.overflow = "";
   }
 
-  // Click backdrop to close
   document.addEventListener("click", (e) => {
     if (e.target.classList.contains("modal")) closeAll();
   });
@@ -105,7 +104,7 @@ const CartBadge = {
         b.style.display = count > 0 ? "flex" : "none";
       });
       return cart;
-    } catch { /* not logged in / guest */ }
+    } catch { /* guest / not logged in is fine */ }
   },
 };
 
@@ -123,19 +122,61 @@ const AuthState = {
     return this._user;
   },
 
-  get user() { return this._user; },
-  get isLoggedIn() { return !!this._user; },
+  get user()        { return this._user; },
+  get isLoggedIn()  { return !!this._user; },
+  get isStaff()     { return !!(this._user?.is_staff || this._user?.is_superuser); },
 
   _applyToNav() {
     const loggedIn = this.isLoggedIn;
+
+    // Show/hide auth-gated elements
     document.querySelectorAll("[data-auth-show]").forEach(el => {
       const show = el.dataset.authShow;
-      el.style.display = (show === "loggedIn" && loggedIn) || (show === "guest" && !loggedIn) ? "" : "none";
+      el.style.display =
+        (show === "loggedIn" && loggedIn) ||
+        (show === "guest"    && !loggedIn)
+          ? "" : "none";
     });
+
     if (loggedIn && this._user) {
+      // Fill in username across the nav
       document.querySelectorAll(".nav-username").forEach(el => {
         el.textContent = this._user.first_name || this._user.username || "Account";
       });
+
+      // Inject "Staff Panel" link into the dropdown if user is staff/superuser
+      if (this.isStaff) {
+        const dropdown = document.querySelector(".nav-user__dropdown");
+        if (dropdown && !dropdown.querySelector("#nav-staff-link")) {
+          // Insert it before the divider (before the sign-out row)
+          const divider = dropdown.querySelector("[data-nav-divider]");
+          const staffLink = document.createElement("a");
+          staffLink.id   = "nav-staff-link";
+          staffLink.href = "/pages/staff/dashboard.html";
+          staffLink.className = "dropdown-item";
+          staffLink.style.color = "var(--blue-600)";
+          staffLink.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            </svg>
+            Staff Panel`;
+
+          if (divider) {
+            dropdown.insertBefore(staffLink, divider);
+          } else {
+            // Insert before the logout button
+            const logout = dropdown.querySelector("#nav-logout-btn");
+            if (logout) dropdown.insertBefore(staffLink, logout);
+            else dropdown.appendChild(staffLink);
+          }
+
+          // Also add a divider above it if not already there
+          const sep = document.createElement("div");
+          sep.style.cssText = "height:1px;background:var(--gray-100);margin:4px 0";
+          dropdown.insertBefore(sep, staffLink);
+        }
+      }
     }
   },
 };

@@ -42,3 +42,10 @@ function formatPrice(amount, currency = CONFIG.CURRENCY_DEFAULT) {
   if (isNaN(num)) return `${sym}—`;
   return `${sym}${num.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
+
+// ─── Payment callback URL ──────────────────────────────────
+// Set this as your redirect/callback URL in Flutterwave and Paystack dashboards.
+// Flutterwave: Dashboard → Settings → API Keys → Add Redirect URL
+// Paystack:    Dashboard → Settings → API Keys & Webhooks → Callback URL
+CONFIG.PAYMENT_CALLBACK_URL = "https://your-frontend-domain.com/pages/payment-callback.html";
+// For local dev: "http://localhost:3000/pages/payment-callback.html"

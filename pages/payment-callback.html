@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Confirmation — Macarti Gadgets</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--blue-50)">
+  <div style="background:white;border-radius:var(--radius-xl);padding:40px;max-width:480px;width:100%;box-shadow:var(--shadow-xl);text-align:center">
+
+    <a href="/index.html" style="display:inline-flex;align-items:center;gap:8px;margin-bottom:28px;text-decoration:none">
+      <div class="logo-mark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+        </svg>
+      </div>
+      <span class="logo-text">Macarti<span>.</span></span>
+    </a>
+
+    <div id="callback-content">
+      <div class="loader-wrap">
+        <span class="spinner"></span>
+        <span class="loader-msg">Confirming your payment…</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/ui.js"></script>
+  <script>
+  /**
+   * Payment Callback Page
+   *
+   * Both Flutterwave and Paystack redirect back to this URL after payment.
+   * Configure this URL as your redirect/callback URL in their dashboards:
+   *   https://your-domain.com/pages/payment-callback.html
+   *
+   * URL params appended by providers:
+   *   Flutterwave : ?status=successful&tx_ref=...&transaction_id=...
+   *   Paystack    : ?reference=...  (trxref is also appended as an alias)
+   *
+   * We verify payment server-side by fetching the payment record from our
+   * own backend (which already has webhook confirmation from the provider),
+   * matching on the reference/tx_ref.
+   */
+  (async () => {
+    const params        = new URLSearchParams(window.location.search);
+    const content       = document.getElementById("callback-content");
+
+    // ── Extract provider-specific params ──────────────────
+    const flwStatus      = params.get("status");          // Flutterwave
+    const flwTxRef       = params.get("tx_ref");          // Flutterwave
+    const flwTxId        = params.get("transaction_id");  // Flutterwave
+    const psReference    = params.get("reference") ||
+                           params.get("trxref");          // Paystack
+
+    const reference = flwTxRef || psReference || null;
+
+    // Provider-side failure (user cancelled, card declined etc.)
+    if (flwStatus && flwStatus !== "successful" && flwStatus !== "completed") {
+      showFailed(
+        "Payment Not Completed",
+        flwStatus === "cancelled"
+          ? "You cancelled the payment. Your order is still saved — you can retry payment from your orders page."
+          : `The payment returned status: <strong>${flwStatus}</strong>. Please try again.`,
+        reference
+      );
+      return;
+    }
+
+    if (!reference) {
+      // No reference at all — probably landed here directly
+      showFailed(
+        "Missing Payment Reference",
+        "No payment reference was found in this URL. If you completed a payment, check your orders page.",
+        null
+      );
+      return;
+    }
+
+    // ── Verify against our backend ─────────────────────────
+    // Poll our payments list for a record matching this reference.
+    // The backend webhook from Flutterwave/Paystack will have already
+    // updated the payment status before the redirect lands here.
+    // We retry up to 5 times (5s apart) to handle webhook latency.
+    let attempts = 0;
+    const MAX_ATTEMPTS = 5;
+    const POLL_INTERVAL_MS = 3000;
+
+    async function pollPayment() {
+      attempts++;
+      updatePollingUI(attempts, MAX_ATTEMPTS);
+
+      try {
+        // Fetch recent payment records and find the one matching our reference
+        const data = await Payments.listPayments({
+          ordering: "-created_at",
+          page_size: 20,
+        });
+        const records = data.results || [];
+        const match = records.find(
+          p => p.reference_id === reference ||
+               p.transaction_id === flwTxId ||
+               p.reference_id === psReference
+        );
+
+        if (match) {
+          if (match.status === "success") {
+            showSuccess(match);
+          } else if (match.status === "failed") {
+            showFailed(
+              "Payment Failed",
+              "Your payment was not successful. Please try again from your orders page.",
+              reference
+            );
+          } else if (attempts < MAX_ATTEMPTS) {
+            // Status still "initialized" or "pending" — webhook may not have fired yet
+            setTimeout(pollPayment, POLL_INTERVAL_MS);
+          } else {
+            // Timed out waiting for webhook
+            showPending(match, reference);
+          }
+        } else {
+          if (attempts < MAX_ATTEMPTS) {
+            setTimeout(pollPayment, POLL_INTERVAL_MS);
+          } else {
+            showPending(null, reference);
+          }
+        }
+      } catch (err) {
+        if (err.status === 401) {
+          // Guest user — we can't look up payments without being logged in.
+          // Show a generic "check your email" success state since the provider
+          // said it was successful.
+          showGuestSuccess(reference);
+        } else if (attempts < MAX_ATTEMPTS) {
+          setTimeout(pollPayment, POLL_INTERVAL_MS);
+        } else {
+          showPending(null, reference);
+        }
+      }
+    }
+
+    await pollPayment();
+
+    // ── UI renderers ────────────────────────────────────────
+
+    function updatePollingUI(attempt, max) {
+      const msg = document.querySelector(".loader-msg");
+      if (msg) {
+        if (attempt === 1) msg.textContent = "Confirming your payment…";
+        else msg.textContent = `Still confirming… (${attempt}/${max})`;
+      }
+    }
+
+    function showSuccess(payment) {
+      content.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"
+             width="64" height="64" style="margin:0 auto 20px;display:block">
+          <circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/>
+        </svg>
+        <h2 style="color:var(--success);margin-bottom:10px">Payment Successful!</h2>
+        <p style="color:var(--gray-600);font-size:.9375rem;margin-bottom:8px;margin-inline:auto">
+          Your order has been confirmed. A receipt will be sent to your email.
+        </p>
+
+        <div style="background:var(--gray-50);border-radius:var(--radius-md);padding:16px;margin:20px 0;text-align:left;font-size:.875rem">
+          <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--gray-100)">
+            <span style="color:var(--gray-500)">Reference</span>
+            <span style="font-family:monospace;font-weight:600">${payment.reference_id || reference}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--gray-100)">
+            <span style="color:var(--gray-500)">Amount</span>
+            <span style="font-weight:700;color:var(--blue-700)">${formatPrice(payment.amount, payment.currency)}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--gray-100)">
+            <span style="color:var(--gray-500)">Provider</span>
+            <span style="text-transform:capitalize">${payment.provider || "—"}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:5px 0">
+            <span style="color:var(--gray-500)">Status</span>
+            <span class="badge badge--green">Confirmed</span>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <a href="/pages/order-detail.html?id=${payment.order_id}" class="btn btn--primary btn--full btn--lg">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+            </svg>
+            View Order
+          </a>
+          <a href="/index.html" class="btn btn--ghost btn--full">Continue Shopping</a>
+        </div>`;
+    }
+
+    function showGuestSuccess(ref) {
+      content.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"
+             width="64" height="64" style="margin:0 auto 20px;display:block">
+          <circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/>
+        </svg>
+        <h2 style="color:var(--success);margin-bottom:10px">Payment Received!</h2>
+        <p style="color:var(--gray-600);font-size:.9rem;margin-bottom:8px;margin-inline:auto">
+          Your payment was successful. A confirmation and receipt will be sent to the email address you provided at checkout.
+        </p>
+        ${ref ? `<p style="font-size:.8125rem;color:var(--gray-400);margin-bottom:20px">Reference: <code style="background:var(--gray-100);padding:2px 6px;border-radius:4px">${ref}</code></p>` : ""}
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <a href="/pages/login.html" class="btn btn--primary btn--full">Sign In to View Order</a>
+          <a href="/index.html" class="btn btn--ghost btn--full">Continue Shopping</a>
+        </div>`;
+    }
+
+    function showPending(payment, ref) {
+      content.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="1.5"
+             width="56" height="56" style="margin:0 auto 16px;display:block">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <h3 style="margin-bottom:10px">Payment Pending Confirmation</h3>
+        <p style="color:var(--gray-600);font-size:.9rem;margin-inline:auto;margin-bottom:8px">
+          Your payment was received by the provider but our system hasn't confirmed it yet.
+          This usually resolves within a few minutes.
+        </p>
+        <p style="color:var(--gray-500);font-size:.8125rem;margin-bottom:20px">
+          Reference: <code style="background:var(--gray-100);padding:2px 6px;border-radius:4px">${ref || "—"}</code>
+        </p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          ${payment ? `<a href="/pages/order-detail.html?id=${payment.order_id}" class="btn btn--primary btn--full">View Order</a>` : ""}
+          <a href="/pages/orders.html" class="btn btn--outline btn--full">My Orders</a>
+          <a href="/index.html" class="btn btn--ghost btn--full">Continue Shopping</a>
+        </div>`;
+    }
+
+    function showFailed(title, message, ref) {
+      content.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="1.5"
+             width="56" height="56" style="margin:0 auto 16px;display:block">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+        <h3 style="margin-bottom:10px">${title}</h3>
+        <p style="color:var(--gray-600);font-size:.9rem;margin-inline:auto;margin-bottom:20px">${message}</p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <a href="/pages/orders.html" class="btn btn--primary btn--full">Go to My Orders</a>
+          <a href="/index.html" class="btn btn--ghost btn--full">Continue Shopping</a>
+        </div>`;
+    }
+  })();
+  </script>
+</body>
+</html>

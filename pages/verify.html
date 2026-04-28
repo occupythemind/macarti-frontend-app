@@ -8,57 +8,94 @@
 </head>
 <body style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--blue-50)">
   <div style="background:white;border-radius:var(--radius-xl);padding:40px;max-width:440px;width:100%;box-shadow:var(--shadow-xl);text-align:center">
+
     <a href="/index.html" style="display:inline-flex;align-items:center;gap:8px;margin-bottom:28px;text-decoration:none">
-      <div class="logo-mark"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+      <div class="logo-mark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+        </svg>
+      </div>
       <span class="logo-text">Macarti<span>.</span></span>
     </a>
+
     <div id="verify-content">
-      <div class="loader-wrap"><span class="spinner"></span><span class="loader-msg">Verifying your email…</span></div>
+      <div class="loader-wrap">
+        <span class="spinner"></span>
+        <span class="loader-msg">Verifying your email…</span>
+      </div>
     </div>
   </div>
+
   <script src="/js/config.js"></script>
   <script src="/js/api.js"></script>
   <script src="/js/ui.js"></script>
   <script>
   (async () => {
-    const uid   = new URLSearchParams(window.location.search).get("uid");
-    const token = new URLSearchParams(window.location.search).get("token");
+    const params  = new URLSearchParams(window.location.search);
+    const uid     = params.get("uid");
+    const token   = params.get("token");
     const content = document.getElementById("verify-content");
 
+    // ── Missing params ─────────────────────────────────────
     if (!uid || !token) {
       content.innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="1.5" width="48" height="48" style="margin:0 auto 16px"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-        <h3>Invalid Link</h3><p style="color:var(--gray-500);font-size:.9rem;margin-top:8px">This verification link is missing required parameters.</p>
-        <a href="/pages/login.html" class="btn btn--primary" style="margin-top:20px">Go to Login</a>`;
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="1.5"
+             width="48" height="48" style="margin:0 auto 16px;display:block">
+          <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+        <h3>Invalid Link</h3>
+        <p style="color:var(--gray-500);font-size:.9rem;margin-top:8px;margin-inline:auto">
+          This verification link is incomplete or malformed.
+        </p>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:20px">
+          <a href="/pages/resend-verify.html" class="btn btn--primary btn--full">Request a new link</a>
+          <a href="/pages/login.html" class="btn btn--ghost btn--full">Back to Sign In</a>
+        </div>`;
       return;
     }
 
+    // ── Attempt verification ───────────────────────────────
     try {
       await Auth.verifyEmail(uid, token);
+
       content.innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" width="52" height="52" style="margin:0 auto 16px"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
-        <h3 style="color:var(--success)">Email Verified!</h3>
-        <p style="color:var(--gray-500);font-size:.9rem;margin-top:8px">Your account is now active. You can sign in.</p>
-        <a href="/pages/login.html" class="btn btn--primary" style="margin-top:20px">Sign In</a>`;
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"
+             width="56" height="56" style="margin:0 auto 16px;display:block">
+          <circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/>
+        </svg>
+        <h3 style="color:var(--success);margin-bottom:10px">Email Verified!</h3>
+        <p style="color:var(--gray-500);font-size:.9rem;margin-bottom:24px;margin-inline:auto">
+          Your account is now active. You can sign in.
+        </p>
+        <a href="/pages/login.html" class="btn btn--primary btn--full btn--lg">Sign In Now</a>`;
+
     } catch (err) {
+      const detail = err.data?.detail || "";
+      const isExpired = detail.toLowerCase().includes("expired") ||
+                        detail.toLowerCase().includes("invalid");
+
       content.innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="1.5" width="48" height="48" style="margin:0 auto 16px"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-        <h3>Verification Failed</h3>
-        <p style="color:var(--gray-500);font-size:.9rem;margin-top:8px">${err.data?.detail || "This link may have expired or already been used."}</p>
-        <div style="margin-top:20px;display:flex;flex-direction:column;gap:10px">
-          <p style="font-size:.875rem;color:var(--gray-600)">Need a new link?</p>
-          <input type="email" class="form-input" id="resend-email" placeholder="your@email.com">
-          <button class="btn btn--primary" id="resend-btn">Resend Verification</button>
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="1.5"
+             width="52" height="52" style="margin:0 auto 16px;display:block">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <h3 style="margin-bottom:10px">
+          ${isExpired ? "Link Expired or Already Used" : "Verification Failed"}
+        </h3>
+        <p style="color:var(--gray-500);font-size:.9rem;margin-inline:auto;margin-bottom:24px">
+          ${detail || "This link may have expired or already been used. Request a fresh one below."}
+        </p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <a href="/pages/resend-verify.html" class="btn btn--primary btn--full">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            Resend Verification Email
+          </a>
+          <a href="/pages/login.html" class="btn btn--ghost btn--full">Back to Sign In</a>
         </div>`;
-      document.getElementById("resend-btn")?.addEventListener("click", async () => {
-        const email = document.getElementById("resend-email")?.value.trim();
-        if (!email) return;
-        try {
-          await Auth.resendVerification(email);
-          document.getElementById("resend-btn").textContent = "Sent! Check your inbox.";
-          document.getElementById("resend-btn").disabled = true;
-        } catch { alert("Failed to resend. Please try again."); }
-      });
     }
   })();
   </script>
